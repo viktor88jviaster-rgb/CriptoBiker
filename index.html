@@ -118,7 +118,7 @@ html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;font-family:
     <div id="top"><div class="chip"><span class="coin"></span><span id="bal">0</span></div></div>
     <div id="view"></div>
     <nav id="nav">
-      <button data-t="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>Играть</button>
+      <button data-t="home"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6 9.500V20h12V9.500"/><path d="M10 20v-5h4v5"/></svg>Меню</button>
       <button data-t="friends"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.500 2.4 6.500 6"/><path d="M16 4.800a3.500 3.500 0 0 1 0 6.400M18 14.300c2.200.8 3.500 2.700 3.500 5.700"/></svg>Друзья</button>
       <button data-t="tasks"><svg viewBox="0 0 24 24"><rect x="4" y="3.500" width="16" height="17" rx="3"/><path d="m8 9 1.500 1.500L12 8M8 15l1.500 1.500L12 14M14.500 9.500H17M14.500 15.500H17"/></svg>Задания</button>
       <button data-t="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.500 20.500c0-4 3.400-6.500 7.500-6.500s7.500 2.500 7.500 6.500"/></svg>Профиль</button>
@@ -446,7 +446,7 @@ function inviteLink(){return 'https://t.me/CryptoBiker_bot?start=ref'+(TU?TU.id:
 function renderMenu(){
   $('menu').className=tab==='home'?'home':'sub';
   $('bal').textContent=fmt(stats.coins+stats.bonus);
-  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('act',b.dataset.t===(tab==='home'?'play':tab)));
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('act',b.dataset.t===tab));
   const rec=Math.max(best,stats.bestScore);let h='';
   if(tab==='home'){
     h='<div class="hero"><div class="ttl">CRYPTO<br>BIKER</div><div class="sub">Гонка по крипто-свечам</div><button class="big" data-a="play">ИГРАТЬ</button><div class="rec">Рекорд: <b>'+fmt(rec)+'</b></div></div>';
@@ -487,7 +487,7 @@ function backToMenu(){
 try{TG.BackButton.onClick(backToMenu)}catch(_){}
 $('menuBtn').addEventListener('click',backToMenu);
 $('toMenu').addEventListener('click',backToMenu);
-document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.t;if(t==='play')openGame();else go(tab===t?'home':t)}));
+document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.t;go(tab===t?'home':t)}));
 $('view').addEventListener('click',e=>{
   const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
   if(a==='play')openGame();
