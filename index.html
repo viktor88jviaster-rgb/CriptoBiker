@@ -129,10 +129,19 @@ html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;font-family:
 .rr.me{background:rgba(255,45,74,.2);border:1px solid #ff6a7e}
 .big.off{opacity:.5;box-shadow:none;filter:saturate(.6)}
 .note{color:#8f9bb8;font-size:13px;line-height:1.45}
+
+.gb{display:block;width:100%;max-width:240px;margin:10px auto 0;padding:12px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.05);color:#fff;font:500 16px Rubik,sans-serif;letter-spacing:1.5px;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:background .15s,border-color .15s}
+.gb:active{background:rgba(255,45,74,.28);border-color:#ff6a7e;transform:scale(.98)}
+.lbtn{pointer-events:auto;color:#e4eaf7;cursor:pointer;font:700 14px Rubik,sans-serif}
+.lbtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+#lmenu{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 56px);background:rgba(14,18,30,.97);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:6px;min-width:160px;pointer-events:auto;backdrop-filter:blur(10px)}
+#lmenu[hidden]{display:none}
+#lmenu button{display:flex;justify-content:space-between;width:100%;padding:11px 12px;border:0;background:none;color:#e4eaf7;font:500 15px Rubik,sans-serif;border-radius:10px;cursor:pointer}
+#lmenu button.on{color:#ff6a7e;background:rgba(255,45,74,.12)}
 </style>
 </head>
 <body>
-<script>window.addEventListener('error',function(e){var d=document.getElementById('err');if(!d){d=document.createElement('div');d.id='err';d.style.cssText='position:fixed;left:8px;right:8px;top:8px;z-index:99;background:#7a1022;color:#fff;font:12px monospace;padding:8px;border-radius:8px;white-space:pre-wrap';d.onclick=function(){d.remove()};document.body.appendChild(d)}d.textContent='Ошибка: '+e.message+' (стр. '+(e.lineno||'?')+')'});</script>
+<script>window.addEventListener('error',function(e){var d=document.getElementById('err');if(!d){d=document.createElement('div');d.id='err';d.style.cssText='position:fixed;left:8px;right:8px;top:8px;z-index:99;background:#7a1022;color:#fff;font:12px monospace;padding:8px;border-radius:8px;white-space:pre-wrap';d.onclick=function(){d.remove()};document.body.appendChild(d)}d.textContent='Ошибка / Error: '+e.message+' (line '+(e.lineno||'?')+')'});</script>
 <div id="game" hidden>
 <canvas id="c"></canvas>
 <div id="hud">
@@ -140,10 +149,10 @@ html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;font-family:
   <div class="card"><b id="hPts" style="color:var(--gold)">0</b><span id="lP">POINTS</span><small id="hSub"></small></div>
   <div class="card"><b id="hFlips" style="color:var(--green)">0</b><span id="lF">FLIPS</span><small></small></div>
 </div>
-<button id="menuBtn">‹ Меню</button>
+<button id="menuBtn" data-i18n="back.menu">‹ Меню</button>
 <div id="hint">GO — газ · REV — тормоз · ← → — наклон в воздухе</div>
 <div id="rbar" hidden></div><div id="cd"></div>
-<div id="msg"><h1 id="mTitle"></h1><p id="mSub"></p><button id="again">Ещё раз</button><button id="play">Играть</button><button id="toMenu">В меню</button></div>
+<div id="msg"><h1 id="mTitle"></h1><p id="mSub"></p><button id="again" data-i18n="btn.again">Ещё раз</button><button id="play" data-i18n="btn.play">Играть</button><button id="toMenu" data-i18n="btn.menu">В меню</button></div>
 <div id="pad">
   <div class="grp"><button class="btn" id="bl">←</button><button class="btn" id="br">→</button></div>
   <div class="grp"><button class="btn round" id="rev">REV</button><button class="btn round" id="go">GO</button></div>
@@ -153,18 +162,18 @@ html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;font-family:
 <div id="menu" class="home">
   <div id="col">
     <div id="bg"></div>
-    <div id="top"><div class="chip"><span class="coin"></span><span id="bal">0</span></div></div>
+    <div id="top"><button class="chip lbtn" id="lang" aria-label="Language"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.800 3 2.800 15 0 18M12 3c-2.800 3-2.800 15 0 18"/></svg><span id="lcode">RU</span></button><div id="lmenu" hidden></div></div>
     <div id="view"></div>
     <nav id="nav">
-      <button data-t="home"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6 9.500V20h12V9.500"/><path d="M10 20v-5h4v5"/></svg>Меню</button>
-      <button data-t="friends"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.500 2.4 6.500 6"/><path d="M16 4.800a3.500 3.500 0 0 1 0 6.400M18 14.300c2.200.8 3.500 2.700 3.500 5.700"/></svg>Друзья</button>
-      <button data-t="tasks"><svg viewBox="0 0 24 24"><rect x="4" y="3.500" width="16" height="17" rx="3"/><path d="m8 9 1.500 1.500L12 8M8 15l1.500 1.500L12 14M14.500 9.500H17M14.500 15.500H17"/></svg>Задания</button>
-      <button data-t="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.500 20.500c0-4 3.400-6.500 7.500-6.500s7.500 2.500 7.500 6.500"/></svg>Профиль</button>
+      <button data-t="home"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6 9.500V20h12V9.500"/><path d="M10 20v-5h4v5"/></svg><span data-i18n="nav.home">Меню</span></button>
+      <button data-t="friends"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.500 2.4 6.500 6"/><path d="M16 4.800a3.500 3.500 0 0 1 0 6.400M18 14.300c2.200.8 3.500 2.700 3.500 5.700"/></svg><span data-i18n="nav.friends">Друзья</span></button>
+      <button data-t="tasks"><svg viewBox="0 0 24 24"><rect x="4" y="3.500" width="16" height="17" rx="3"/><path d="m8 9 1.500 1.500L12 8M8 15l1.500 1.500L12 14M14.500 9.500H17M14.500 15.500H17"/></svg><span data-i18n="nav.tasks">Задания</span></button>
+      <button data-t="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.500 20.500c0-4 3.400-6.500 7.500-6.500s7.500 2.500 7.500 6.500"/></svg><span data-i18n="nav.profile">Профиль</span></button>
     </nav>
   </div>
 </div>
-<div id="srch"><div class="sp"><div class="spin" id="sSpin"></div><h2 id="sTitle"></h2><div class="cnt" id="sCnt"></div><div id="sSlots"></div><button class="btn2" id="sCancel" style="width:100%;margin-top:6px">Отмена</button></div></div>
-<div id="res"><div class="sp"><h2 id="rTitle"></h2><div class="cnt" id="rRew"></div><div id="rList"></div><div class="row" style="margin-top:10px"><button class="btn2 hot" id="rAgain">Играть снова</button><button class="btn2" id="rMenu">В меню</button></div></div></div>
+<div id="srch"><div class="sp"><div class="spin" id="sSpin"></div><h2 id="sTitle"></h2><div class="cnt" id="sCnt"></div><div id="sSlots"></div><button class="btn2" id="sCancel" data-i18n="btn.cancel" style="width:100%;margin-top:6px">Отмена</button></div></div>
+<div id="res"><div class="sp"><h2 id="rTitle"></h2><div class="cnt" id="rRew"></div><div id="rList"></div><div class="row" style="margin-top:10px"><button class="btn2 hot" id="rAgain" data-i18n="btn.playAgain">Играть снова</button><button class="btn2" id="rMenu" data-i18n="btn.menu">В меню</button></div></div></div>
 <div id="toast"></div>
 
 <script>
@@ -333,22 +342,22 @@ function crash(){
   try{Telegram.WebApp.HapticFeedback.notificationOccurred('error')}catch(_){}
   state='crashed';ct=0;
   if(mode==='solo'){lastScore=points;endRun();if(points>best){best=points;try{localStorage.setItem('cb_best',best)}catch(_){}}}
-  $('mTitle').textContent='Ликвидация!';
-  $('mSub').textContent=mode==='race'?'Возвращаемся на трассу':'Счёт '+points+' · рекорд '+best+' · заезд начнётся заново';
+  $('mTitle').textContent=tr('crash.title');
+  $('mSub').textContent=mode==='race'?tr('crash.race'):tr('crash.solo',{s:points,b:best});
   $('msg').className='show bad';
 }
 function finish(){
   state='done';lastScore=points;endRun();
   if(points>best){best=points;try{localStorage.setItem('cb_best',best)}catch(_){}}
-  $('mTitle').textContent='Финиш!';
-  $('mSub').textContent='Счёт '+points+' · флипов '+flips+' · рекорд '+best;
+  $('mTitle').textContent=tr('fin.title');
+  $('mSub').textContent=tr('fin.sub',{s:points,f:flips,b:best});
   $('msg').className='show win';
 }
 let lastScore=0;
 function showReady(after){
   state='ready';
-  $('mTitle').textContent=after?'Попробуем ещё?':'Крипто-байк';
-  $('mSub').textContent=after?'Прошлый счёт '+lastScore+' · рекорд '+best:'Едь по свечам и собирай монеты';
+  $('mTitle').textContent=after?tr('ready.retry'):tr('ready.title');
+  $('mSub').textContent=after?tr('ready.last',{s:lastScore,b:best}):tr('ready.sub');
   $('msg').className='show ready';
 }
 function startPlay(){if(!gameOn||state!=='ready')return;$('msg').className='';state='run';inp.goEdge=false}
@@ -375,7 +384,7 @@ function update(dt){
   if(mode==='race')raceTick(dt);
   if(!onG){air+=dt;rot+=B.w*dt}
   else if(wasAir){
-    if(air>.25){const f=Math.floor((Math.abs(rot)+1)/(2*Math.PI));if(f>0){flips+=f;stats.flips+=f;points+=200*f;pop(B.x,B.y-60,'ФЛИП ×'+f+'  +'+200*f,'#6df08a')}}
+    if(air>.25){const f=Math.floor((Math.abs(rot)+1)/(2*Math.PI));if(f>0){flips+=f;stats.flips+=f;points+=200*f;pop(B.x,B.y-60,tr('pop.flip',{n:f,p:200*f}),'#6df08a')}}
     air=0;rot=0;
   }
   wasAir=!onG;
@@ -383,10 +392,10 @@ function update(dt){
   if(mode==='race')styleLive=0;else if(airStyle)styleLive+=14*dt;
   if(wheelie&&mode==='solo'){
     styleLive+=12*dt;wheelDist+=Math.max(0,B.vx)*dt/8;
-    if(wheelDist>=500){wheelDist=0;points+=300;pop(B.x,B.y-60,'ВИЛЛИ-БОНУС +300','#ffc857')}
+    if(wheelDist>=500){wheelDist=0;points+=300;pop(B.x,B.y-60,tr('pop.willie'),'#ffc857')}
   }
   if(!airStyle&&!wheelie){
-    if(styleLive>=1){const s=Math.round(styleLive);points+=s;lastStyle=s;pop(B.x,B.y-50,'+'+s+' очков за стиль','#ffc857')}
+    if(styleLive>=1){const s=Math.round(styleLive);points+=s;lastStyle=s;pop(B.x,B.y-50,tr('pop.style',{n:s}),'#ffc857')}
     styleLive=0;
   }
   for(const c of coins){
@@ -518,7 +527,7 @@ function draw(){
     ctx.fillRect(cx-CW/2,top,CW,c.h);
   }
   ctx.beginPath();ctx.moveTo(finishX,y0);ctx.lineTo(finishX,y1);ctx.setLineDash([10,8]);ctx.strokeStyle='#f2f4f8';ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
-  ctx.font='700 22px Rubik,sans-serif';ctx.fillStyle='#f2f4f8';ctx.textAlign='left';ctx.fillText('ФИНИШ',finishX+10,sAt(finishX)-80);
+  ctx.font='700 22px Rubik,sans-serif';ctx.fillStyle='#f2f4f8';ctx.textAlign='left';ctx.fillText(tr('lbl.finish'),finishX+10,sAt(finishX)-80);
   for(const c of coins){
     if(c.t||c.x<x0-20||c.x>x1+20)continue;
     const by=c.y+Math.sin(T*4+c.x*.1)*2;
@@ -527,7 +536,7 @@ function draw(){
   }
   if(mode==='race'){
     ctx.beginPath();ctx.moveTo(startX-28,y0);ctx.lineTo(startX-28,y1);ctx.setLineDash([10,8]);ctx.strokeStyle='#6df08a';ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
-    ctx.font='700 22px Rubik,sans-serif';ctx.fillStyle='#6df08a';ctx.textAlign='right';ctx.fillText('СТАРТ',startX-36,sAt(startX)-80);
+    ctx.font='700 22px Rubik,sans-serif';ctx.fillStyle='#6df08a';ctx.textAlign='right';ctx.fillText(tr('lbl.start'),startX-36,sAt(startX)-80);
     for(const b of bots){
       if(b.x<x0-60||b.x>x1+60)continue;
       const v=VEH[b.veh],by=sAt(b.x)-v.R-v.H,sl=Math.atan((sAt(b.x+8)-sAt(b.x-8))/16);
@@ -537,7 +546,7 @@ function draw(){
   }
   ctx.save();ctx.translate(B.x,B.y);ctx.rotate(B.a);drawVehicle(ctx,stats.veh,wr);ctx.restore();
   ctx.textAlign='center';
-  if(state==='run'&&styleLive>=1){ctx.font='700 15px "JetBrains Mono",monospace';ctx.fillStyle='#ffc857';ctx.fillText('очки за стиль +'+Math.round(styleLive),B.x,B.y-62)}
+  if(state==='run'&&styleLive>=1){ctx.font='700 15px "JetBrains Mono",monospace';ctx.fillStyle='#ffc857';ctx.fillText(tr('live.style',{n:Math.round(styleLive)}),B.x,B.y-62)}
   for(const p of pops){ctx.globalAlpha=1-p.t/1.1;ctx.font='700 16px "JetBrains Mono",monospace';ctx.fillStyle=p.col;ctx.fillText(p.txt,p.x,p.y-p.t*40)}
   ctx.globalAlpha=1;
 
@@ -556,10 +565,156 @@ function draw(){
     bar[bots.length].style.left=Math.max(0,Math.min(100,(B.x-startX)/span*100))+'%';
   }else{$('hPts').textContent=points;$('hFlips').textContent=flips}
   const wheelie=B.g0&&!B.g1&&B.a<-.3;
-  $('hSub').textContent=mode==='race'?'':wheelie?'ВИЛЛИ '+wheelDist.toFixed(1)+'/500':lastStyle>0?'СТИЛЬ '+lastStyle:'';
+  $('hSub').textContent=mode==='race'?'':wheelie?tr('sub.willie',{d:wheelDist.toFixed(1)}):lastStyle>0?tr('sub.style',{n:lastStyle}):'';
 }
 
 
+const I18N={
+ru:{'title':'Крипто-байк: заезд по свечам','nav.home':'Меню','nav.friends':'Друзья','nav.tasks':'Задания','nav.profile':'Профиль','back.menu':'‹ Меню',
+'hint.solo':'GO — газ · REV — тормоз · ← → — наклон в воздухе','hint.race':'Гонка! Первым доедь до финиша',
+'btn.again':'Ещё раз','btn.play':'Играть','btn.menu':'В меню','btn.cancel':'Отмена','btn.playAgain':'Играть снова',
+'ready.title':'Крипто-байк','ready.retry':'Попробуем ещё?','ready.last':'Прошлый счёт {s} · рекорд {b}','ready.sub':'Едь по свечам и собирай монеты',
+'crash.title':'Ликвидация!','crash.race':'Возвращаемся на трассу','crash.solo':'Счёт {s} · рекорд {b} · заезд начнётся заново',
+'fin.title':'Финиш!','fin.sub':'Счёт {s} · флипов {f} · рекорд {b}',
+'pop.flip':'ФЛИП ×{n}  +{p}','pop.willie':'ВИЛЛИ-БОНУС +300','pop.style':'+{n} очков за стиль','live.style':'очки за стиль +{n}',
+'lbl.finish':'ФИНИШ','lbl.start':'СТАРТ','sub.willie':'ВИЛЛИ {d}/500','sub.style':'СТИЛЬ {n}','hud.place':'МЕСТО','hud.time':'ВРЕМЯ',
+'home.sub':'Гонка по крипто-свечам','home.play':'ИГРАТЬ','home.garage':'ВЫБОР БАЙКА','home.tour':'ТУРНИР','home.rec':'Байк: <b>{v}</b> · Рекорд: <b>{r}</b>',
+'t.friends':'Друзья','t.tasks':'Задания','t.profile':'Профиль','t.garage':'Выбор байка','t.tourney':'Турнир',
+'tour.two':'Играть вдвоем','tour.find1':'Поиск соперника','tour.five':'Играть пятером','tour.find5':'Поиск соперников',
+'tour.note':'Гонка без монет: общий старт и финиш, побеждает тот, кто быстрее доедет. Вы едете на выбранном байке. Сейчас соперников изображают боты, онлайн-матчи подключаются через сервер.',
+'v.classic':'Мотоцикл','v.bike':'Велосипед','v.moped':'Мопед','v.harley':'Harley-Davidson','v.sport':'Спортбайк','v.quad':'Квадроцикл',
+'sl.0':'Скорость','sl.1':'Разгон','sl.2':'Управление','sl.3':'Прыжок','sel.pick':'Выбрать','sel.on':'✓ Выбрано','toast.picked':'Выбран: {v}',
+'fr.title':'Позови друзей','fr.text':'Отправь друзьям ссылку на игру и соревнуйтесь, кто проедет дальше и сделает больше флипов.','fr.invite':'Пригласить','fr.copy':'Копировать','fr.list':'Твои друзья','fr.empty':'Рейтинг друзей появится позже',
+'fr.share':'Го гонять по крипто-свечам! Побей мой рекорд: {r}','toast.copied':'Ссылка скопирована','toast.coins':'+{n} монет',
+'q.g5':'Сыграй 5 заездов','q.c50':'Собери 50 монет','q.f5':'Сделай 5 флипов','q.t25':'Проедь 25% трассы за один заезд','q.s3k':'Набери 3000 очков за заезд','q.c500':'Собери 500 монет',
+'q.claim':'Забрать','q.done':'✓ Получено','q.prog':'В процессе',
+'p.racer':'Гонщик','p.rec':'Рекорд','p.track':'Лучшая трасса','p.runs':'Заездов','p.coins':'Монет собрано','p.flips':'Флипов','p.races':'Гонок','p.wins':'Побед','p.bal':'Баланс',
+'s.one':'Поиск соперника…','s.many':'Поиск соперников…','s.found':'Соперники найдены!','s.count':'Игроков: {a} / {b}','s.wait':'Поиск…','s.you':'(ты)','s.me':'Ты',
+'r.p1':'1 место! 🏆','r.p2':'2 место','r.p3':'3 место','r.p4':'4 место','r.p5':'5 место','r.reward':'Награда: +{n} монет','r.none':'Награды нет, повезёт в следующий раз','r.sec':'с'},
+en:{'title':'Crypto Biker: ride the candles','nav.home':'Menu','nav.friends':'Friends','nav.tasks':'Tasks','nav.profile':'Profile','back.menu':'‹ Menu',
+'hint.solo':'GO — gas · REV — brake · ← → — tilt in the air','hint.race':'Race! Be the first to the finish',
+'btn.again':'Again','btn.play':'Play','btn.menu':'To menu','btn.cancel':'Cancel','btn.playAgain':'Play again',
+'ready.title':'Crypto Biker','ready.retry':'Try again?','ready.last':'Last score {s} · best {b}','ready.sub':'Ride the candles and collect coins',
+'crash.title':'Liquidated!','crash.race':'Back to the track','crash.solo':'Score {s} · best {b} · the run restarts',
+'fin.title':'Finish!','fin.sub':'Score {s} · flips {f} · best {b}',
+'pop.flip':'FLIP ×{n}  +{p}','pop.willie':'WHEELIE BONUS +300','pop.style':'+{n} style points','live.style':'style points +{n}',
+'lbl.finish':'FINISH','lbl.start':'START','sub.willie':'WHEELIE {d}/500','sub.style':'STYLE {n}','hud.place':'PLACE','hud.time':'TIME',
+'home.sub':'A race across crypto candles','home.play':'PLAY','home.garage':'CHOOSE BIKE','home.tour':'TOURNAMENT','home.rec':'Bike: <b>{v}</b> · Best: <b>{r}</b>',
+'t.friends':'Friends','t.tasks':'Tasks','t.profile':'Profile','t.garage':'Choose bike','t.tourney':'Tournament',
+'tour.two':'Play 2-player','tour.find1':'Find opponent','tour.five':'Play 5-player','tour.find5':'Find opponents',
+'tour.note':'A coin-free race: shared start and finish, the fastest rider wins. You ride the bike you picked. For now the opponents are bots; online matches connect through a server.',
+'v.classic':'Motorcycle','v.bike':'Bicycle','v.moped':'Moped','v.harley':'Harley-Davidson','v.sport':'Sport bike','v.quad':'Quad bike',
+'sl.0':'Speed','sl.1':'Acceleration','sl.2':'Handling','sl.3':'Jump','sel.pick':'Select','sel.on':'✓ Selected','toast.picked':'Selected: {v}',
+'fr.title':'Invite friends','fr.text':'Send your friends the game link and compete to see who rides further and does more flips.','fr.invite':'Invite','fr.copy':'Copy','fr.list':'Your friends','fr.empty':'Friends ranking coming soon',
+'fr.share':"Let's ride the crypto candles! Beat my best: {r}",'toast.copied':'Link copied','toast.coins':'+{n} coins',
+'q.g5':'Play 5 runs','q.c50':'Collect 50 coins','q.f5':'Do 5 flips','q.t25':'Ride 25% of the track in one run','q.s3k':'Score 3000 points in one run','q.c500':'Collect 500 coins',
+'q.claim':'Claim','q.done':'✓ Claimed','q.prog':'In progress',
+'p.racer':'Racer','p.rec':'Best score','p.track':'Best track','p.runs':'Runs','p.coins':'Coins collected','p.flips':'Flips','p.races':'Races','p.wins':'Wins','p.bal':'Balance',
+'s.one':'Searching for an opponent…','s.many':'Searching for opponents…','s.found':'Opponents found!','s.count':'Players: {a} / {b}','s.wait':'Searching…','s.you':'(you)','s.me':'You',
+'r.p1':'1st place! 🏆','r.p2':'2nd place','r.p3':'3rd place','r.p4':'4th place','r.p5':'5th place','r.reward':'Reward: +{n} coins','r.none':'No reward this time, better luck next race','r.sec':'s'}
+};
+Object.assign(I18N,{
+uk:{'title':'Крипто-байк: заїзд по свічках','nav.home':'Меню','nav.friends':'Друзі','nav.tasks':'Завдання','nav.profile':'Профіль','back.menu':'‹ Меню',
+'hint.solo':'GO — газ · REV — гальмо · ← → — нахил у повітрі','hint.race':'Гонка! Першим доїдь до фінішу',
+'btn.again':'Ще раз','btn.play':'Грати','btn.menu':'У меню','btn.cancel':'Скасувати','btn.playAgain':'Грати знову',
+'ready.title':'Крипто-байк','ready.retry':'Спробуємо ще?','ready.last':'Минулий рахунок {s} · рекорд {b}','ready.sub':'Їдь по свічках і збирай монети',
+'crash.title':'Ліквідація!','crash.race':'Повертаємось на трасу','crash.solo':'Рахунок {s} · рекорд {b} · заїзд почнеться заново',
+'fin.title':'Фініш!','fin.sub':'Рахунок {s} · фліпів {f} · рекорд {b}',
+'pop.flip':'ФЛІП ×{n}  +{p}','pop.willie':'ВІЛІ-БОНУС +300','pop.style':'+{n} балів за стиль','live.style':'бали за стиль +{n}',
+'lbl.finish':'ФІНІШ','lbl.start':'СТАРТ','sub.willie':'ВІЛІ {d}/500','sub.style':'СТИЛЬ {n}','hud.place':'МІСЦЕ','hud.time':'ЧАС',
+'home.sub':'Гонка по крипто-свічках','home.play':'ГРАТИ','home.garage':'ВИБІР БАЙКА','home.tour':'ТУРНІР','home.rec':'Байк: <b>{v}</b> · Рекорд: <b>{r}</b>',
+'t.friends':'Друзі','t.tasks':'Завдання','t.profile':'Профіль','t.garage':'Вибір байка','t.tourney':'Турнір',
+'tour.two':'Грати вдвох','tour.find1':'Пошук суперника','tour.five':'Грати вп’ятьох','tour.find5':'Пошук суперників',
+'tour.note':'Гонка без монет: спільний старт і фініш, перемагає той, хто швидше доїде. Ви їдете на обраному байку. Зараз суперників імітують боти, онлайн-матчі підключаються через сервер.',
+'v.classic':'Мотоцикл','v.bike':'Велосипед','v.moped':'Мопед','v.harley':'Harley-Davidson','v.sport':'Спортбайк','v.quad':'Квадроцикл',
+'sl.0':'Швидкість','sl.1':'Розгін','sl.2':'Керування','sl.3':'Стрибок','sel.pick':'Обрати','sel.on':'✓ Обрано','toast.picked':'Обрано: {v}',
+'fr.title':'Поклич друзів','fr.text':'Надішли друзям посилання на гру та змагайтеся, хто проїде далі й зробить більше фліпів.','fr.invite':'Запросити','fr.copy':'Копіювати','fr.list':'Твої друзі','fr.empty':'Рейтинг друзів з’явиться пізніше',
+'fr.share':'Го гонити по крипто-свічках! Побий мій рекорд: {r}','toast.copied':'Посилання скопійовано','toast.coins':'+{n} монет',
+'q.g5':'Зіграй 5 заїздів','q.c50':'Збери 50 монет','q.f5':'Зроби 5 фліпів','q.t25':'Проїдь 25% траси за один заїзд','q.s3k':'Набери 3000 балів за заїзд','q.c500':'Збери 500 монет',
+'q.claim':'Забрати','q.done':'✓ Отримано','q.prog':'У процесі',
+'p.racer':'Гонщик','p.rec':'Рекорд','p.track':'Найкраща траса','p.runs':'Заїздів','p.coins':'Монет зібрано','p.flips':'Фліпів','p.races':'Гонок','p.wins':'Перемог','p.bal':'Баланс',
+'s.one':'Пошук суперника…','s.many':'Пошук суперників…','s.found':'Суперників знайдено!','s.count':'Гравців: {a} / {b}','s.wait':'Пошук…','s.you':'(ти)','s.me':'Ти',
+'r.p1':'1 місце! 🏆','r.p2':'2 місце','r.p3':'3 місце','r.p4':'4 місце','r.p5':'5 місце','r.reward':'Нагорода: +{n} монет','r.none':'Нагороди немає, пощастить наступного разу','r.sec':'с'},
+zh:{'title':'加密摩托：蜡烛图竞速','nav.home':'菜单','nav.friends':'好友','nav.tasks':'任务','nav.profile':'我的','back.menu':'‹ 菜单',
+'hint.solo':'GO — 油门 · REV — 刹车 · ← → — 空中倾斜','hint.race':'比赛开始！率先冲过终点',
+'btn.again':'再来一次','btn.play':'开始','btn.menu':'返回菜单','btn.cancel':'取消','btn.playAgain':'再玩一次',
+'ready.title':'加密摩托','ready.retry':'再试一次？','ready.last':'上次得分 {s} · 最高 {b}','ready.sub':'骑行蜡烛图，收集金币',
+'crash.title':'爆仓！','crash.race':'返回赛道','crash.solo':'得分 {s} · 最高 {b} · 即将重新开始',
+'fin.title':'终点！','fin.sub':'得分 {s} · 翻转 {f} · 最高 {b}',
+'pop.flip':'翻转 ×{n}  +{p}','pop.willie':'翘头奖励 +300','pop.style':'+{n} 花式分','live.style':'花式分 +{n}',
+'lbl.finish':'终点','lbl.start':'起点','sub.willie':'翘头 {d}/500','sub.style':'花式 {n}','hud.place':'名次','hud.time':'用时',
+'home.sub':'蜡烛图上的竞速','home.play':'开始游戏','home.garage':'选择车辆','home.tour':'锦标赛','home.rec':'车辆：<b>{v}</b> · 最高分：<b>{r}</b>',
+'t.friends':'好友','t.tasks':'任务','t.profile':'我的','t.garage':'选择车辆','t.tourney':'锦标赛',
+'tour.two':'双人对战','tour.find1':'匹配对手','tour.five':'五人对战','tour.find5':'匹配对手们',
+'tour.note':'无金币竞速：共同的起点和终点，先到者获胜。你骑着所选的车辆。目前对手由机器人扮演，在线对战需通过服务器连接。',
+'v.classic':'摩托车','v.bike':'自行车','v.moped':'小踏板车','v.harley':'哈雷戴维森','v.sport':'运动摩托','v.quad':'四轮摩托',
+'sl.0':'速度','sl.1':'加速','sl.2':'操控','sl.3':'跳跃','sel.pick':'选择','sel.on':'✓ 已选择','toast.picked':'已选择：{v}',
+'fr.title':'邀请好友','fr.text':'把游戏链接发给好友，比比谁骑得更远、翻转更多。','fr.invite':'邀请','fr.copy':'复制','fr.list':'你的好友','fr.empty':'好友排行榜即将上线',
+'fr.share':'一起来骑蜡烛图吧！来破我的纪录：{r}','toast.copied':'链接已复制','toast.coins':'+{n} 金币',
+'q.g5':'完成 5 局游戏','q.c50':'收集 50 枚金币','q.f5':'完成 5 次翻转','q.t25':'单局跑完 25% 的赛道','q.s3k':'单局获得 3000 分','q.c500':'收集 500 枚金币',
+'q.claim':'领取','q.done':'✓ 已领取','q.prog':'进行中',
+'p.racer':'车手','p.rec':'最高分','p.track':'最佳赛道','p.runs':'游戏局数','p.coins':'已收集金币','p.flips':'翻转次数','p.races':'比赛场次','p.wins':'胜场','p.bal':'余额',
+'s.one':'正在匹配对手…','s.many':'正在匹配对手们…','s.found':'已找到对手！','s.count':'玩家：{a} / {b}','s.wait':'匹配中…','s.you':'（你）','s.me':'你',
+'r.p1':'第 1 名！🏆','r.p2':'第 2 名','r.p3':'第 3 名','r.p4':'第 4 名','r.p5':'第 5 名','r.reward':'奖励：+{n} 金币','r.none':'这次没有奖励，下次加油','r.sec':'秒'},
+de:{'title':'Krypto-Biker: Fahrt über die Kerzen','nav.home':'Menü','nav.friends':'Freunde','nav.tasks':'Aufgaben','nav.profile':'Profil','back.menu':'‹ Menü',
+'hint.solo':'GO — Gas · REV — Bremse · ← → — Neigen in der Luft','hint.race':'Rennen! Sei als Erster im Ziel',
+'btn.again':'Nochmal','btn.play':'Spielen','btn.menu':'Zum Menü','btn.cancel':'Abbrechen','btn.playAgain':'Nochmal spielen',
+'ready.title':'Krypto-Biker','ready.retry':'Nochmal versuchen?','ready.last':'Letzter Punktestand {s} · Rekord {b}','ready.sub':'Fahre über die Kerzen und sammle Münzen',
+'crash.title':'Liquidiert!','crash.race':'Zurück zur Strecke','crash.solo':'Punkte {s} · Rekord {b} · die Fahrt beginnt neu',
+'fin.title':'Ziel!','fin.sub':'Punkte {s} · Flips {f} · Rekord {b}',
+'pop.flip':'FLIP ×{n}  +{p}','pop.willie':'WHEELIE-BONUS +300','pop.style':'+{n} Stilpunkte','live.style':'Stilpunkte +{n}',
+'lbl.finish':'ZIEL','lbl.start':'START','sub.willie':'WHEELIE {d}/500','sub.style':'STIL {n}','hud.place':'PLATZ','hud.time':'ZEIT',
+'home.sub':'Ein Rennen über Krypto-Kerzen','home.play':'SPIELEN','home.garage':'BIKE WÄHLEN','home.tour':'TURNIER','home.rec':'Bike: <b>{v}</b> · Rekord: <b>{r}</b>',
+'t.friends':'Freunde','t.tasks':'Aufgaben','t.profile':'Profil','t.garage':'Bike wählen','t.tourney':'Turnier',
+'tour.two':'Zu zweit spielen','tour.find1':'Gegner suchen','tour.five':'Zu fünft spielen','tour.find5':'Gegner suchen',
+'tour.note':'Rennen ohne Münzen: gemeinsamer Start und Ziel, wer schneller ankommt, gewinnt. Du fährst das gewählte Bike. Aktuell werden die Gegner von Bots gespielt; Online-Matches werden über einen Server verbunden.',
+'v.classic':'Motorrad','v.bike':'Fahrrad','v.moped':'Moped','v.harley':'Harley-Davidson','v.sport':'Sportmotorrad','v.quad':'Quad',
+'sl.0':'Tempo','sl.1':'Beschleunigung','sl.2':'Handling','sl.3':'Sprung','sel.pick':'Wählen','sel.on':'✓ Gewählt','toast.picked':'Gewählt: {v}',
+'fr.title':'Freunde einladen','fr.text':'Schicke deinen Freunden den Link zum Spiel und messt euch: Wer fährt weiter und macht mehr Flips?','fr.invite':'Einladen','fr.copy':'Kopieren','fr.list':'Deine Freunde','fr.empty':'Freunde-Rangliste folgt bald',
+'fr.share':'Lass uns über die Krypto-Kerzen fahren! Schlag meinen Rekord: {r}','toast.copied':'Link kopiert','toast.coins':'+{n} Münzen',
+'q.g5':'Spiele 5 Fahrten','q.c50':'Sammle 50 Münzen','q.f5':'Mache 5 Flips','q.t25':'Fahre 25 % der Strecke in einer Fahrt','q.s3k':'Erreiche 3000 Punkte in einer Fahrt','q.c500':'Sammle 500 Münzen',
+'q.claim':'Abholen','q.done':'✓ Abgeholt','q.prog':'Läuft',
+'p.racer':'Fahrer','p.rec':'Rekord','p.track':'Beste Strecke','p.runs':'Fahrten','p.coins':'Gesammelte Münzen','p.flips':'Flips','p.races':'Rennen','p.wins':'Siege','p.bal':'Guthaben',
+'s.one':'Gegner wird gesucht…','s.many':'Gegner werden gesucht…','s.found':'Gegner gefunden!','s.count':'Spieler: {a} / {b}','s.wait':'Suche…','s.you':'(du)','s.me':'Du',
+'r.p1':'1. Platz! 🏆','r.p2':'2. Platz','r.p3':'3. Platz','r.p4':'4. Platz','r.p5':'5. Platz','r.reward':'Belohnung: +{n} Münzen','r.none':'Diesmal keine Belohnung, beim nächsten Mal klappt es','r.sec':'s'},
+fr:{'title':'Crypto Biker : course sur les bougies','nav.home':'Menu','nav.friends':'Amis','nav.tasks':'Quêtes','nav.profile':'Profil','back.menu':'‹ Menu',
+'hint.solo':'GO — gaz · REV — frein · ← → — inclinaison en l’air','hint.race':'Course ! Sois le premier à l’arrivée',
+'btn.again':'Encore','btn.play':'Jouer','btn.menu':'Au menu','btn.cancel':'Annuler','btn.playAgain':'Rejouer',
+'ready.title':'Crypto Biker','ready.retry':'On réessaie ?','ready.last':'Dernier score {s} · record {b}','ready.sub':'Roule sur les bougies et ramasse des pièces',
+'crash.title':'Liquidation !','crash.race':'Retour sur la piste','crash.solo':'Score {s} · record {b} · la course repart',
+'fin.title':'Arrivée !','fin.sub':'Score {s} · flips {f} · record {b}',
+'pop.flip':'FLIP ×{n}  +{p}','pop.willie':'BONUS WHEELING +300','pop.style':'+{n} points de style','live.style':'points de style +{n}',
+'lbl.finish':'ARRIVÉE','lbl.start':'DÉPART','sub.willie':'WHEELING {d}/500','sub.style':'STYLE {n}','hud.place':'RANG','hud.time':'TEMPS',
+'home.sub':'Une course sur les bougies crypto','home.play':'JOUER','home.garage':'CHOISIR UNE MOTO','home.tour':'TOURNOI','home.rec':'Moto : <b>{v}</b> · Record : <b>{r}</b>',
+'t.friends':'Amis','t.tasks':'Quêtes','t.profile':'Profil','t.garage':'Choisir une moto','t.tourney':'Tournoi',
+'tour.two':'Jouer à deux','tour.find1':'Chercher un adversaire','tour.five':'Jouer à cinq','tour.find5':'Chercher des adversaires',
+'tour.note':'Course sans pièces : départ et arrivée communs, le plus rapide gagne. Tu roules avec la moto choisie. Pour l’instant, les adversaires sont des bots ; les matchs en ligne passent par un serveur.',
+'v.classic':'Moto','v.bike':'Vélo','v.moped':'Mobylette','v.harley':'Harley-Davidson','v.sport':'Moto de sport','v.quad':'Quad',
+'sl.0':'Vitesse','sl.1':'Accélération','sl.2':'Maniabilité','sl.3':'Saut','sel.pick':'Choisir','sel.on':'✓ Choisi','toast.picked':'Choisi : {v}',
+'fr.title':'Invite tes amis','fr.text':'Envoie le lien du jeu à tes amis et voyez qui va le plus loin et fait le plus de flips.','fr.invite':'Inviter','fr.copy':'Copier','fr.list':'Tes amis','fr.empty':'Le classement des amis arrive bientôt',
+'fr.share':'Viens rouler sur les bougies crypto ! Bats mon record : {r}','toast.copied':'Lien copié','toast.coins':'+{n} pièces',
+'q.g5':'Joue 5 courses','q.c50':'Ramasse 50 pièces','q.f5':'Fais 5 flips','q.t25':'Parcours 25 % de la piste en une course','q.s3k':'Marque 3000 points en une course','q.c500':'Ramasse 500 pièces',
+'q.claim':'Récupérer','q.done':'✓ Récupéré','q.prog':'En cours',
+'p.racer':'Pilote','p.rec':'Record','p.track':'Meilleure piste','p.runs':'Courses jouées','p.coins':'Pièces ramassées','p.flips':'Flips','p.races':'Courses','p.wins':'Victoires','p.bal':'Solde',
+'s.one':'Recherche d’un adversaire…','s.many':'Recherche d’adversaires…','s.found':'Adversaires trouvés !','s.count':'Joueurs : {a} / {b}','s.wait':'Recherche…','s.you':'(toi)','s.me':'Toi',
+'r.p1':'1re place ! 🏆','r.p2':'2e place','r.p3':'3e place','r.p4':'4e place','r.p5':'5e place','r.reward':'Récompense : +{n} pièces','r.none':'Pas de récompense cette fois, ce sera pour la prochaine','r.sec':'s'}
+});
+const LOC={ru:'ru-RU',uk:'uk-UA',zh:'zh-CN',de:'de-DE',fr:'fr-FR',en:'en-US'};
+function detectLang(c){c=String(c||'').slice(0,2).toLowerCase();return c==='be'?'ru':(LOC[c]?c:'en')}
+const LANGS={ru:'Русский',uk:'Українська',en:'English',zh:'中文',de:'Deutsch',fr:'Français'};
+let lang='ru';
+try{lang=localStorage.getItem('cb_lang')||''}catch(_){}
+if(!LANGS[lang])lang=detectLang(navigator.language||'ru');
+function tr(k,a){let x=(I18N[lang]&&I18N[lang][k])||I18N.ru[k]||k;if(a)for(const y in a)x=x.split('{'+y+'}').join(a[y]);return x}
+function applyStatic(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n)});
+  document.title=tr('title');document.documentElement.lang=lang;$('lcode').textContent=lang.toUpperCase();
+}
+function setLang(l){lang=l;try{localStorage.setItem('cb_lang',l)}catch(_){}applyStatic();renderMenu()}
+function renderLang(){$('lmenu').innerHTML=Object.keys(LANGS).map(k=>'<button data-l="'+k+'" class="'+(k===lang?'on':'')+'"><span>'+LANGS[k]+'</span>'+(k===lang?'<span>✓</span>':'')+'</button>').join('')}
+$('lang').addEventListener('click',e=>{e.stopPropagation();renderLang();$('lmenu').hidden=!$('lmenu').hidden});
+$('lmenu').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b)setLang(b.dataset.l)});
+document.addEventListener('click',()=>{$('lmenu').hidden=true});
 let TG=null,TU=null;
 let stats={veh:'classic',races:0,wins:0,coins:0,flips:0,games:0,bestScore:0,bestTrack:0,claimed:[],bonus:0};
 try{Object.assign(stats,JSON.parse(localStorage.getItem('cb_stats')||'{}'))}catch(_){}
@@ -570,52 +725,51 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 function trackPct(){return Math.max(0,Math.min(100,(B.x-startX)/(finishX-startX)*100))}
 function endRun(){stats.games++;stats.bestScore=Math.max(stats.bestScore,points);stats.bestTrack=Math.max(stats.bestTrack,trackPct());save()}
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=n=>Math.floor(n).toLocaleString('ru-RU');
+const fmt=n=>Math.floor(n).toLocaleString(LOC[lang]||'en-US');
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1900)}
 function hap(){try{TG.HapticFeedback.selectionChanged()}catch(_){}}
 
 const QUESTS=[
- {id:'g5',t:'Сыграй 5 заездов',v:()=>stats.games,n:5,r:30},
- {id:'c50',t:'Собери 50 монет',v:()=>stats.coins,n:50,r:50},
- {id:'f5',t:'Сделай 5 флипов',v:()=>stats.flips,n:5,r:100},
- {id:'t25',t:'Проедь 25% трассы за один заезд',v:()=>stats.bestTrack,n:25,r:150},
- {id:'s3k',t:'Набери 3000 очков за заезд',v:()=>stats.bestScore,n:3000,r:200},
- {id:'c500',t:'Собери 500 монет',v:()=>stats.coins,n:500,r:300}
+ {id:'g5',v:()=>stats.games,n:5,r:30},
+ {id:'c50',v:()=>stats.coins,n:50,r:50},
+ {id:'f5',v:()=>stats.flips,n:5,r:100},
+ {id:'t25',v:()=>stats.bestTrack,n:25,r:150},
+ {id:'s3k',v:()=>stats.bestScore,n:3000,r:200},
+ {id:'c500',v:()=>stats.coins,n:500,r:300}
 ];
 let tab='home';
-const TITLES={friends:'Друзья',tasks:'Задания',profile:'Профиль',garage:'Выбор байка',tourney:'Турнир'};
-const SL=['Скорость','Разгон','Управление','Прыжок'];
+
+
 function inviteLink(){return 'https://t.me/CryptoBiker_bot?start=ref'+(TU?TU.id:'')}
 function renderMenu(){
   $('menu').className=tab==='home'?'home':'sub';
-  $('bal').textContent=fmt(stats.coins+stats.bonus);
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('act',b.dataset.t===(tab==='garage'||tab==='tourney'?'home':tab)));
   const rec=Math.max(best,stats.bestScore);let h='';
   if(tab==='home'){
-    h='<div class="hero"><div class="ttl">CRYPTO<br>BIKER</div><div class="sub">Гонка по крипто-свечам</div><button class="big" data-a="play">ИГРАТЬ</button><button class="big" data-a="garage">ВЫБОР БАЙКА</button><button class="big" data-a="tourney">ТУРНИР</button><div class="rec">Байк: <b>'+VEH[stats.veh].n+'</b> · Рекорд: <b>'+fmt(rec)+'</b></div></div>';
+    h='<div class="hero"><div class="ttl">CRYPTO<br>BIKER</div><div class="sub">'+tr('home.sub')+'</div><button class="gb" data-a="play">'+tr('home.play')+'</button><button class="gb" data-a="garage">'+tr('home.garage')+'</button><button class="gb" data-a="tourney">'+tr('home.tour')+'</button><div class="rec">'+tr('home.rec',{v:tr('v.'+stats.veh),r:fmt(rec)})+'</div></div>';
   }else{
-    h='<div class="hd"><button data-a="back">‹</button><h2>'+TITLES[tab]+'</h2></div>';
+    h='<div class="hd"><button data-a="back">‹</button><h2>'+tr('t.'+tab)+'</h2></div>';
     if(tab==='tourney'){
-      h+='<div class="pn"><button class="big'+(tmode===2?'':' off')+'" data-a="mode" data-m="2">Играть вдвоем</button><button class="btn2 hot" style="width:100%;margin-top:10px" data-a="search" data-m="2">Поиск соперника</button></div>'
-        +'<div class="pn"><button class="big'+(tmode===5?'':' off')+'" data-a="mode" data-m="5">Играть пятером</button><button class="btn2 hot" style="width:100%;margin-top:10px" data-a="search" data-m="5">Поиск соперников</button></div>'
-        +'<div class="pn"><p class="note" style="margin:0">Гонка без монет: общий старт и финиш, побеждает тот, кто быстрее доедет. Вы едете на выбранном байке. Сейчас соперников изображают боты, онлайн-матчи подключаются через сервер.</p></div>';
+      h+='<div class="pn"><button class="big'+(tmode===2?'':' off')+'" data-a="mode" data-m="2">'+tr('tour.two')+'</button><button class="btn2 hot" style="width:100%;margin-top:10px" data-a="search" data-m="2">'+tr('tour.find1')+'</button></div>'
+        +'<div class="pn"><button class="big'+(tmode===5?'':' off')+'" data-a="mode" data-m="5">'+tr('tour.five')+'</button><button class="btn2 hot" style="width:100%;margin-top:10px" data-a="search" data-m="5">'+tr('tour.find5')+'</button></div>'
+        +'<div class="pn"><p class="note" style="margin:0">'+tr('tour.note')+'</p></div>';
     }else if(tab==='garage'){
       for(const id in VEH){const v=VEH[id],sel=stats.veh===id;
-        h+='<div class="pn vc'+(sel?' sel':'')+'"><canvas data-v="'+id+'" width="480" height="260"></canvas><div class="vn">'+v.n+'</div><div class="vg">'+v.s.map((x,i)=>'<div class="sr"><span>'+SL[i]+'</span><i><u style="width:'+x*20+'%"></u></i></div>').join('')+'</div><button class="btn2'+(sel?'':' hot')+'" data-a="pick" data-v="'+id+'"'+(sel?' disabled':'')+'>'+(sel?'✓ Выбрано':'Выбрать')+'</button></div>';}
+        h+='<div class="pn vc'+(sel?' sel':'')+'"><canvas data-v="'+id+'" width="480" height="260"></canvas><div class="vn">'+tr('v.'+id)+'</div><div class="vg">'+v.s.map((x,i)=>'<div class="sr"><span>'+tr('sl.'+i)+'</span><i><u style="width:'+x*20+'%"></u></i></div>').join('')+'</div><button class="btn2'+(sel?'':' hot')+'" data-a="pick" data-v="'+id+'"'+(sel?' disabled':'')+'>'+(sel?tr('sel.on'):tr('sel.pick'))+'</button></div>';}
     }else if(tab==='friends'){
-      h+='<div class="pn"><h3>Позови друзей</h3><p>Отправь друзьям ссылку на игру и соревнуйтесь, кто проедет дальше и сделает больше флипов.</p><div class="row"><button class="btn2 hot" data-a="share">Пригласить</button><button class="btn2" data-a="copy">Копировать</button></div></div>'
-        +'<div class="pn"><h3>Твои друзья</h3><div class="empty">Рейтинг друзей появится позже</div></div>';
+      h+='<div class="pn"><h3>'+tr('fr.title')+'</h3><p>'+tr('fr.text')+'</p><div class="row"><button class="btn2 hot" data-a="share">'+tr('fr.invite')+'</button><button class="btn2" data-a="copy">'+tr('fr.copy')+'</button></div></div>'
+        +'<div class="pn"><h3>'+tr('fr.list')+'</h3><div class="empty">'+tr('fr.empty')+'</div></div>';
     }else if(tab==='tasks'){
       for(const q of QUESTS){
         const cur=Math.min(q.v(),q.n),done=q.v()>=q.n,got=stats.claimed.includes(q.id);
-        h+='<div class="pn q"><div class="in"><div class="t">'+q.t+'</div><div class="bar"><i style="width:'+(cur/q.n*100)+'%"></i></div><small>'+fmt(cur)+' / '+fmt(q.n)+'</small> <span class="rw"><span class="coin"></span>+'+q.r+'</span></div>'
-          +(got?'<button class="btn2" disabled>✓ Получено</button>':done?'<button class="btn2 hot" data-a="claim" data-id="'+q.id+'">Забрать</button>':'<button class="btn2" disabled>В процессе</button>')+'</div>';
+        h+='<div class="pn q"><div class="in"><div class="t">'+tr('q.'+q.id)+'</div><div class="bar"><i style="width:'+(cur/q.n*100)+'%"></i></div><small>'+fmt(cur)+' / '+fmt(q.n)+'</small> <span class="rw"><span class="coin"></span>+'+q.r+'</span></div>'
+          +(got?'<button class="btn2" disabled>'+tr('q.done')+'</button>':done?'<button class="btn2 hot" data-a="claim" data-id="'+q.id+'">'+tr('q.claim')+'</button>':'<button class="btn2" disabled>'+tr('q.prog')+'</button>')+'</div>';
       }
     }else{
-      const name=TU?esc([TU.first_name,TU.last_name].filter(Boolean).join(' ')||'Гонщик'):'Гонщик';
-      const ini=name.trim().charAt(0).toUpperCase()||'Г';
+      const name=TU?esc([TU.first_name,TU.last_name].filter(Boolean).join(' ')||tr('p.racer')):tr('p.racer');
+      const ini=name.trim().charAt(0).toUpperCase()||'R';
       h+='<div class="av">'+(TU&&TU.photo_url?'<img src="'+esc(TU.photo_url)+'" alt="" onerror="this.remove()">':ini)+'</div><div class="nm">'+name+'</div><div class="un">'+(TU&&TU.username?'@'+esc(TU.username):'Crypto Biker')+'</div>'
-        +'<div class="grid">'+[['Рекорд',fmt(rec)],['Лучшая трасса',Math.floor(stats.bestTrack)+'%'],['Заездов',fmt(stats.games)],['Монет собрано',fmt(stats.coins)],['Флипов',fmt(stats.flips)],['Гонок',fmt(stats.races)],['Побед',fmt(stats.wins)],['Баланс',fmt(stats.coins+stats.bonus)]].map(a=>'<div class="st"><b>'+a[1]+'</b><span>'+a[0]+'</span></div>').join('')+'</div>';
+        +'<div class="grid">'+[[tr('p.rec'),fmt(rec)],[tr('p.track'),Math.floor(stats.bestTrack)+'%'],[tr('p.runs'),fmt(stats.games)],[tr('p.coins'),fmt(stats.coins)],[tr('p.flips'),fmt(stats.flips)],[tr('p.races'),fmt(stats.races)],[tr('p.wins'),fmt(stats.wins)],[tr('p.bal'),fmt(stats.coins+stats.bonus)]].map(a=>'<div class="st"><b>'+a[1]+'</b><span>'+a[0]+'</span></div>').join('')+'</div>';
     }
   }
   $('view').innerHTML=h;$('view').scrollTop=0;
@@ -629,7 +783,7 @@ function renderMenu(){
 }
 function go(t){tab=t;hap();renderMenu()}
 function openGame(){
-  hap();applyVehicle(stats.veh);mode='solo';N=1500;$('rbar').hidden=true;$('lP').textContent='POINTS';$('lF').textContent='FLIPS';setHint('GO — газ · REV — тормоз · ← → — наклон в воздухе');$('menu').hidden=true;$('game').hidden=false;gameOn=true;resize();
+  hap();applyVehicle(stats.veh);mode='solo';N=1500;$('rbar').hidden=true;$('lP').textContent='POINTS';$('lF').textContent='FLIPS';setHint(tr('hint.solo'));$('menu').hidden=true;$('game').hidden=false;gameOn=true;resize();
   newTrack();reset();state='run';$('msg').className='';inp.go=inp.rev=inp.l=inp.r=inp.goEdge=false;
   try{TG.BackButton.show()}catch(_){}
 }
@@ -644,24 +798,24 @@ function backToMenu(){
 }
 
 function setHint(t){const h=$('hint');h.textContent=t;h.style.animation='none';h.style.opacity=1;void h.offsetWidth;h.style.animation='fade 1s ease 7s forwards'}
-const BN=['Алекс','Макс','Ник','Дима','Рома','Лёва','Саня','Тимур','Егор','Влад','Кирилл','Артём','Игорь','Паша'];
+const BNL={ru:['Алекс','Макс','Ник','Дима','Рома','Лёва','Саня','Тимур','Егор','Влад','Кирилл','Артём','Игорь','Паша'],en:['Alex','Max','Nick','Dan','Roman','Leo','Sam','Tim','Egor','Vlad','Kirill','Art','Igor','Paul'],uk:['Олекс','Макс','Нік','Діма','Рома','Лев','Саня','Тимур','Єгор','Влад','Кирило','Артем','Ігор','Паша'],zh:['小明','阿杰','大伟','小龙','阿强','小刚','阿飞','老王','小李','阿豪','小宇','阿文','子轩','浩然'],de:['Lukas','Max','Jonas','Felix','Leon','Paul','Tim','Finn','Elias','Noah','Ben','Jan','Moritz','Nico'],fr:['Lucas','Hugo','Louis','Jules','Léo','Adam','Théo','Noé','Enzo','Paul','Gabin','Marius','Rémi','Noa']};
 const BC=['#ff6a7e','#5ee6f0','#ffc857','#6df08a','#c08bff','#ff9f5a'];
 const BASE={bike:250,moped:285,classic:330,harley:335,sport:370,quad:310};
-function myName(){return TU&&TU.first_name?esc(TU.first_name):'Ты'}
+function myName(){return TU&&TU.first_name?esc(TU.first_name):tr('s.me')}
 function renderSearch(){
   const s=srch;if(!s)return;const n=s.m,done=s.found>=n-1;
-  $('sTitle').textContent=done?'Соперники найдены!':(n===2?'Поиск соперника…':'Поиск соперников…');
-  $('sCnt').textContent='Игроков: '+(s.found+1)+' / '+n;
+  $('sTitle').textContent=done?tr('s.found'):(n===2?tr('s.one'):tr('s.many'));
+  $('sCnt').textContent=tr('s.count',{a:s.found+1,b:n});
   $('sSpin').style.display=done?'none':'block';
-  let h='<div class="slot"><span class="dot"></span>'+myName()+' (ты)</div>';
-  for(let i=0;i<n-1;i++)h+=i<s.found?'<div class="slot"><span class="dot"></span>'+s.names[i]+'</div>':'<div class="slot wait"><span class="dot"></span>Поиск…</div>';
+  let h='<div class="slot"><span class="dot"></span>'+myName()+' '+tr('s.you')+'</div>';
+  for(let i=0;i<n-1;i++)h+=i<s.found?'<div class="slot"><span class="dot"></span>'+s.names[i]+'</div>':'<div class="slot wait"><span class="dot"></span>'+tr('s.wait')+'</div>';
   $('sSlots').innerHTML=h;
 }
 function closeSearch(){if(srch){clearTimeout(srch.timer);srch=null}$('srch').className=''}
 function startSearch(n){
   hap();closeSearch();tmode=n;
   const names=[],used=new Set();
-  while(names.length<n-1){const nm=BN[(Math.random()*BN.length)|0]+'_'+(10+((Math.random()*89)|0));if(!used.has(nm)){used.add(nm);names.push(nm)}}
+  while(names.length<n-1){const nm=(BNL[lang]||BNL.en)[(Math.random()*BNL.en.length)|0]+'_'+(10+((Math.random()*89)|0));if(!used.has(nm)){used.add(nm);names.push(nm)}}
   const s=srch={m:n,names,found:0,timer:0};
   $('srch').className='show';renderSearch();
   const next=()=>{
@@ -679,10 +833,10 @@ function openRace(names){
   const ids=Object.keys(VEH);
   bots=names.map((nm,i)=>{const vid=ids[(Math.random()*ids.length)|0];return{name:nm,veh:vid,x:startX,v:0,base:BASE[vid]+(Math.random()-.5)*60,ph:Math.random()*6,stall:0,fin:null,wr:0,col:BC[i%BC.length]}});
   raceT=0;state='countdown';cd=3;
-  $('lP').textContent='МЕСТО';$('lF').textContent='ВРЕМЯ';
+  $('lP').textContent=tr('hud.place');$('lF').textContent=tr('hud.time');
   $('rbar').innerHTML=bots.map(b=>'<i style="background:'+b.col+'"></i>').join('')+'<i class="me"></i>';$('rbar').hidden=false;
   $('msg').className='';$('res').className='';
-  setHint('Гонка! Первым доедь до финиша');
+  setHint(tr('hint.race'));
   try{TG.BackButton.show()}catch(_){}
 }
 function raceTick(dt){
@@ -710,9 +864,9 @@ function raceFinish(){
   const place=rows.findIndex(x=>x.you)+1,n=rows.length;
   const rew=n===2?(place===1?50:0):([150,80,40,0,0][place-1]||0);
   stats.races++;if(place===1)stats.wins++;stats.bonus+=rew;save();
-  $('rTitle').textContent=place===1?'1 место! 🏆':place+' место';$('rTitle').className=place===1?'w':'';
-  $('rList').innerHTML=rows.map((x,i)=>'<div class="rr'+(x.you?' me':'')+'"><b>'+(i+1)+'</b><span>'+x.name+'</span><em>'+x.t.toFixed(2)+' с</em></div>').join('');
-  $('rRew').textContent=rew?'Награда: +'+rew+' монет':'Награды нет, повезёт в следующий раз';
+  $('rTitle').textContent=tr('r.p'+place);$('rTitle').className=place===1?'w':'';
+  $('rList').innerHTML=rows.map((x,i)=>'<div class="rr'+(x.you?' me':'')+'"><b>'+(i+1)+'</b><span>'+x.name+'</span><em>'+x.t.toFixed(2)+' '+tr('r.sec')+'</em></div>').join('');
+  $('rRew').textContent=rew?tr('r.reward',{n:rew}):tr('r.none');
   $('msg').className='';$('res').className='show';
   try{TG.HapticFeedback.notificationOccurred(place===1?'success':'warning')}catch(_){}
 }
@@ -728,23 +882,24 @@ $('view').addEventListener('click',e=>{
   else if(a==='tourney')go('tourney');
   else if(a==='mode'){tmode=+el.dataset.m;hap();renderMenu()}
   else if(a==='search')startSearch(+el.dataset.m);
-  else if(a==='pick'){const id=el.dataset.v;if(VEH[id]){stats.veh=id;save();hap();toast('Выбран: '+VEH[id].n);renderMenu()}}
+  else if(a==='pick'){const id=el.dataset.v;if(VEH[id]){stats.veh=id;save();hap();toast(tr('toast.picked',{v:tr('v.'+id)}));renderMenu()}}
   else if(a==='back')go('home');
   else if(a==='share'){
-    const url='https://t.me/share/url?url='+encodeURIComponent(inviteLink())+'&text='+encodeURIComponent('Го гонять по крипто-свечам! Побей мой рекорд: '+fmt(Math.max(best,stats.bestScore)));
+    const url='https://t.me/share/url?url='+encodeURIComponent(inviteLink())+'&text='+encodeURIComponent(tr('fr.share',{r:fmt(Math.max(best,stats.bestScore))}));
     try{if(TG&&TG.openTelegramLink)TG.openTelegramLink(url);else window.open(url,'_blank')}catch(_){window.open(url,'_blank')}
   }else if(a==='copy'){
-    const done=()=>toast('Ссылка скопирована');
+    const done=()=>toast(tr('toast.copied'));
     try{navigator.clipboard.writeText(inviteLink()).then(done,()=>toast(inviteLink()))}catch(_){toast(inviteLink())}
   }else if(a==='claim'){
     const q=QUESTS.find(x=>x.id===el.dataset.id);
-    if(q&&q.v()>=q.n&&!stats.claimed.includes(q.id)){stats.claimed.push(q.id);stats.bonus+=q.r;save();hap();toast('+'+q.r+' монет');renderMenu()}
+    if(q&&q.v()>=q.n&&!stats.claimed.includes(q.id)){stats.claimed.push(q.id);stats.bonus+=q.r;save();hap();toast(tr('toast.coins',{n:q.r}));renderMenu()}
   }
 });
 function initTG(){
   try{
     const t=window.Telegram&&Telegram.WebApp;if(!t||TG===t)return;
     TG=t;TU=t.initDataUnsafe&&t.initDataUnsafe.user||null;
+    try{if(!localStorage.getItem('cb_lang')&&TU&&TU.language_code){lang=detectLang(TU.language_code);applyStatic()}}catch(_){}
     t.ready();t.expand();
     if(t.disableVerticalSwipes)t.disableVerticalSwipes();
     if(t.setHeaderColor)t.setHeaderColor('#0b0f17');
@@ -757,7 +912,7 @@ try{
   if(window.Telegram&&Telegram.WebApp)initTG();
   else{const sc=document.createElement('script');sc.src='https://telegram.org/js/telegram-web-app.js';sc.async=true;sc.onload=initTG;document.head.appendChild(sc)}
 }catch(_){}
-if(stats.veh==='moto')stats.veh='harley';if(!VEH[stats.veh])stats.veh='classic';applyVehicle(stats.veh);newTrack();reset();showReady(false);renderMenu();
+if(stats.veh==='moto')stats.veh='harley';if(!VEH[stats.veh])stats.veh='classic';applyVehicle(stats.veh);newTrack();reset();showReady(false);renderMenu();applyStatic();
 let lastT=performance.now();
 function frame(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;if(gameOn){update(dt);draw()}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
