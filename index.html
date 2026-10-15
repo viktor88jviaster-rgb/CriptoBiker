@@ -138,6 +138,31 @@ html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;font-family:
 #lmenu[hidden]{display:none}
 #lmenu button{display:flex;justify-content:space-between;width:100%;padding:11px 12px;border:0;background:none;color:#e4eaf7;font:500 15px Rubik,sans-serif;border-radius:10px;cursor:pointer}
 #lmenu button.on{color:#ff6a7e;background:rgba(255,45,74,.12)}
+
+.bal{display:flex;justify-content:space-between;align-items:center;padding:8px 14px}
+.bal b{display:flex;align-items:center;gap:7px;font-size:18px;color:#ffc857;font-variant-numeric:tabular-nums}
+.leg{font-size:11px;color:#8f9bb8;margin:0 0 8px;line-height:1.5}
+.gt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gc{background:rgba(14,18,30,.78);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;text-align:center;color:inherit;font:inherit;cursor:pointer;backdrop-filter:blur(8px)}
+.gc.sel{border-color:#ff6a7e;box-shadow:0 0 16px rgba(255,45,74,.3)}
+.gc:active{transform:scale(.98)}
+.gc canvas{width:100%;height:auto;display:block;border-radius:10px;background:rgba(255,255,255,.03)}
+.gn{font:700 13px Rubik,sans-serif;margin:4px 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gm{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}
+.mb{display:flex;align-items:center;gap:4px;font-size:10px}
+.mb i{flex:1;height:5px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.mb u{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ff3b57,#ffc857)}
+.uph{margin:16px 0 10px;font:700 17px Rubik,sans-serif}
+.upsel{color:#6df08a;font-size:13px;min-height:16px;margin-top:-2px}
+.up{padding:12px 14px}
+.uh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.uh b{font:700 16px Rubik,sans-serif}.uh span{font-size:13px;color:#aab4cc}
+.pips{display:flex;gap:6px;margin-bottom:10px}
+.pips s{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.12);text-decoration:none}
+.pips s.on{background:linear-gradient(90deg,#ff3b57,#ffc857);box-shadow:0 0 8px rgba(255,200,87,.4)}
+.up .btn2{display:flex;justify-content:center;align-items:center;gap:6px}
+.up .dn{flex:0 0 38%}
+.up .coin{width:13px;height:13px}
 </style>
 </head>
 <body>
@@ -192,7 +217,13 @@ const VEH={
  sport:{n:'Спортбайк',R:12,L:27,H:8,DRIVE:2300,FWD:.6,VMAX:1150,BRAKE:1000,MU:2.4,WHEELIE:34,KICK:3.6,LEAN:40,WMAX:12,GL:13,INERTIA:850,POP:3.0,HF:13,HU:27,s:[5,5,4,4]},
  quad:{n:'Квадроцикл',R:14,L:25,H:7,DRIVE:1800,FWD:1,VMAX:780,BRAKE:1100,MU:2.8,WHEELIE:9,KICK:1.5,LEAN:24,WMAX:8,GL:10,INERTIA:1300,POP:2.6,HF:0,HU:34,s:[4,4,3,4]}
 };
-function applyVehicle(id){const v=VEH[id]||VEH.classic;R=v.R;L=v.L;H=v.H;DRIVE=v.DRIVE;FWD=v.FWD;VMAX=v.VMAX;BRAKE=v.BRAKE;MU=v.MU;WHEELIE=v.WHEELIE;KICK=v.KICK;LEAN=v.LEAN;WMAX=v.WMAX;GL=v.GL;INERTIA=v.INERTIA;POP=v.POP;HF=v.HF;HU=v.HU}
+function applyVehicle(id){
+  const v=VEH[id]||VEH.classic;
+  const lv=(typeof stats!=='undefined'&&stats&&stats.up&&stats.up[id])||[0,0,0,0];
+  R=v.R;L=v.L;H=v.H;FWD=v.FWD;BRAKE=v.BRAKE;MU=v.MU;WHEELIE=v.WHEELIE;KICK=v.KICK;INERTIA=v.INERTIA;HF=v.HF;HU=v.HU;
+  VMAX=v.VMAX*(1+.06*lv[0]);DRIVE=v.DRIVE*(1+.06*lv[1]);
+  LEAN=v.LEAN*(1+.07*lv[2]);GL=v.GL*(1+.07*lv[2]);WMAX=v.WMAX*(1+.05*lv[2]);POP=v.POP*(1+.04*lv[3]);
+}
 let seed=1;
 function rnd(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
 function gauss(){return(rnd()+rnd()+rnd()-1.5)*2}
@@ -372,7 +403,7 @@ function update(dt){
   if(state==='done'||state==='ready')return;
   if(state==='countdown'){
     const n=Math.ceil(dt*240),h=dt/n;for(let k=0;k<n;k++)step(h,NOINP,B);
-    cd-=dt;$('cd').className='show';$('cd').textContent=Math.max(1,Math.ceil(cd));
+    if(online())cd=(netStart-Date.now())/1000;else cd-=dt;$('cd').className='show';$('cd').textContent=Math.max(1,Math.ceil(cd));
     if(cd<=0){state='run';raceT=0;$('cd').textContent='GO!';setTimeout(()=>{if(state!=='countdown')$('cd').className=''},700)}
     return;
   }
@@ -538,8 +569,9 @@ function draw(){
     ctx.beginPath();ctx.moveTo(startX-28,y0);ctx.lineTo(startX-28,y1);ctx.setLineDash([10,8]);ctx.strokeStyle='#6df08a';ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
     ctx.font='700 22px Rubik,sans-serif';ctx.fillStyle='#6df08a';ctx.textAlign='right';ctx.fillText(tr('lbl.start'),startX-36,sAt(startX)-80);
     for(const b of bots){
+      if(online()){const px=b.x;b.x+=(b.tx-b.x)*.35;b.wr+=(b.x-px)/10;if(b.ty!=null&&b.y!=null){b.y+=(b.ty-b.y)*.35;b.a+=(b.ta-b.a)*.35}}
       if(b.x<x0-60||b.x>x1+60)continue;
-      const v=VEH[b.veh],by=sAt(b.x)-v.R-v.H,sl=Math.atan((sAt(b.x+8)-sAt(b.x-8))/16);
+      const v=VEH[b.veh],live=online()&&b.ty!=null&&b.y!=null,by=live?b.y:sAt(b.x)-v.R-v.H,sl=live?b.a/.9:Math.atan((sAt(b.x+8)-sAt(b.x-8))/16);
       ctx.save();ctx.globalAlpha=.6;ctx.translate(b.x,by);ctx.rotate(sl*.9);drawVehicle(ctx,b.veh,b.wr);ctx.restore();
       ctx.font='700 11px "JetBrains Mono",monospace';ctx.textAlign='center';ctx.fillStyle=b.col;ctx.fillText(b.name,b.x,by-50);
     }
@@ -699,6 +731,33 @@ fr:{'title':'Crypto Biker : course sur les bougies','nav.home':'Menu','nav.frien
 's.one':'Recherche d’un adversaire…','s.many':'Recherche d’adversaires…','s.found':'Adversaires trouvés !','s.count':'Joueurs : {a} / {b}','s.wait':'Recherche…','s.you':'(toi)','s.me':'Toi',
 'r.p1':'1re place ! 🏆','r.p2':'2e place','r.p3':'3e place','r.p4':'4e place','r.p5':'5e place','r.reward':'Récompense : +{n} pièces','r.none':'Pas de récompense cette fois, ce sera pour la prochaine','r.sec':'s'}
 });
+const EX={
+ru:{'r.dnf':'Финиш не засчитан','toast.offline':'Сервер недоступен, играем с ботами','toast.lost':'Соединение потеряно','r.wait':'Финиш! Ждём остальных…','tour.noteOn':'Гонка без монет: общий старт и финиш, побеждает тот, кто быстрее доедет. Соперники — живые игроки. Если никого нет, места займут боты (помечены 🤖).'},
+en:{'r.dnf':'Finish not counted','toast.offline':'Server unavailable, playing with bots','toast.lost':'Connection lost','r.wait':'Finished! Waiting for the others…','tour.noteOn':'A coin-free race: shared start and finish, the fastest rider wins. Your opponents are real players. If nobody is around, bots (marked 🤖) fill the empty spots.'},
+uk:{'r.dnf':'Фініш не зараховано','toast.offline':'Сервер недоступний, граємо з ботами','toast.lost':'З’єднання втрачено','r.wait':'Фініш! Чекаємо на інших…','tour.noteOn':'Гонка без монет: спільний старт і фініш, перемагає той, хто швидше доїде. Суперники — живі гравці. Якщо нікого немає, місця займуть боти (позначені 🤖).'},
+zh:{'r.dnf':'终点成绩无效','toast.offline':'服务器不可用，将与机器人对战','toast.lost':'连接已断开','r.wait':'已到达终点！等待其他玩家…','tour.noteOn':'无金币竞速：共同的起点和终点，先到者获胜。对手是真人玩家；如果没人，空位将由机器人（标有 🤖）补上。'},
+de:{'r.dnf':'Ziel nicht gewertet','toast.offline':'Server nicht erreichbar, du spielst gegen Bots','toast.lost':'Verbindung verloren','r.wait':'Im Ziel! Warten auf die anderen…','tour.noteOn':'Rennen ohne Münzen: gemeinsamer Start und Ziel, wer schneller ankommt, gewinnt. Deine Gegner sind echte Spieler. Ist niemand da, füllen Bots (mit 🤖 markiert) die freien Plätze.'},
+fr:{'r.dnf':'Arrivée non comptabilisée','toast.offline':'Serveur indisponible, on joue contre des bots','toast.lost':'Connexion perdue','r.wait':'Arrivée ! On attend les autres…','tour.noteOn':'Course sans pièces : départ et arrivée communs, le plus rapide gagne. Tes adversaires sont de vrais joueurs. Si personne n’est là, des bots (marqués 🤖) prennent les places libres.'}
+};
+for(const l in EX)Object.assign(I18N[l],EX[l]);
+const EX2={
+ru:{'gar.hint':'Нажми на байк, чтобы выбрать его и настроить','up.title':'Настройка характеристик','up.level':'Ур. {n}/{m}','up.buy':'Улучшить','up.max':'МАКС','up.bal':'Баланс','up.sel':'✓ Выбран для игры','up.hint':'Улучшай характеристики за монеты. Монеты собирай в заездах, получай за задания и победы в турнирах.','toast.noCoins':'Не хватает монет','toast.upgraded':'{s}: уровень {n}'},
+en:{'gar.hint':'Tap a bike to select and tune it','up.title':'Stat tuning','up.level':'Lv {n}/{m}','up.buy':'Upgrade','up.max':'MAX','up.bal':'Balance','up.sel':'✓ Selected for the race','up.hint':'Upgrade stats with coins. Collect coins in runs, earn them from tasks and tournament wins.','toast.noCoins':'Not enough coins','toast.upgraded':'{s}: level {n}'},
+uk:{'gar.hint':'Натисни на байк, щоб обрати і налаштувати його','up.title':'Налаштування характеристик','up.level':'Рів. {n}/{m}','up.buy':'Покращити','up.max':'МАКС','up.bal':'Баланс','up.sel':'✓ Обрано для гри','up.hint':'Покращуй характеристики за монети. Монети збирай у заїздах, отримуй за завдання та перемоги в турнірах.','toast.noCoins':'Не вистачає монет','toast.upgraded':'{s}: рівень {n}'},
+zh:{'gar.hint':'点击车辆即可选择并调校','up.title':'属性调校','up.level':'等级 {n}/{m}','up.buy':'升级','up.max':'满级','up.bal':'余额','up.sel':'✓ 已选用','up.hint':'用金币升级属性。在比赛中收集金币，也可通过任务和锦标赛胜利获得。','toast.noCoins':'金币不足','toast.upgraded':'{s}：等级 {n}'},
+de:{'gar.hint':'Tippe auf ein Bike, um es zu wählen und zu tunen','up.title':'Werte tunen','up.level':'Stufe {n}/{m}','up.buy':'Verbessern','up.max':'MAX','up.bal':'Guthaben','up.sel':'✓ Fürs Rennen gewählt','up.hint':'Verbessere Werte mit Münzen. Sammle Münzen in Fahrten, durch Aufgaben und Turniersiege.','toast.noCoins':'Nicht genug Münzen','toast.upgraded':'{s}: Stufe {n}'},
+fr:{'gar.hint':'Touche une moto pour la choisir et la régler','up.title':'Réglage des stats','up.level':'Niv. {n}/{m}','up.buy':'Améliorer','up.max':'MAX','up.bal':'Solde','up.sel':'✓ Choisie pour la course','up.hint':'Améliore les stats avec des pièces. Ramasse-en en course, gagne-en avec les quêtes et les victoires en tournoi.','toast.noCoins':'Pas assez de pièces','toast.upgraded':'{s} : niveau {n}'}
+};
+for(const l in EX2)Object.assign(I18N[l],EX2[l]);
+const EX3={
+ru:{'up.hint':'Повышение уровня стоит монет, понижение возвращает 50% их стоимости. Монеты собирай в заездах, получай за задания и победы в турнирах.','toast.downgraded':'{s}: уровень {n} (+{c} монет)'},
+en:{'up.hint':'Raising a level costs coins; lowering it refunds 50% of the price. Collect coins in runs, earn them from tasks and tournament wins.','toast.downgraded':'{s}: level {n} (+{c} coins)'},
+uk:{'up.hint':'Підвищення рівня коштує монет, зниження повертає 50% їхньої вартості. Монети збирай у заїздах, отримуй за завдання та перемоги в турнірах.','toast.downgraded':'{s}: рівень {n} (+{c} монет)'},
+zh:{'up.hint':'升级需要金币，降级可退还 50% 的价格。金币可在比赛中收集，也可通过任务和锦标赛胜利获得。','toast.downgraded':'{s}：等级 {n}（+{c} 金币）'},
+de:{'up.hint':'Eine Stufe höher kostet Münzen, eine Stufe niedriger erstattet 50 % des Preises. Sammle Münzen in Fahrten, durch Aufgaben und Turniersiege.','toast.downgraded':'{s}: Stufe {n} (+{c} Münzen)'},
+fr:{'up.hint':'Monter d’un niveau coûte des pièces, redescendre en rembourse 50 %. Ramasse des pièces en course, gagne-en avec les quêtes et les victoires en tournoi.','toast.downgraded':'{s} : niveau {n} (+{c} pièces)'}
+};
+for(const l in EX3)Object.assign(I18N[l],EX3[l]);
 const LOC={ru:'ru-RU',uk:'uk-UA',zh:'zh-CN',de:'de-DE',fr:'fr-FR',en:'en-US'};
 function detectLang(c){c=String(c||'').slice(0,2).toLowerCase();return c==='be'?'ru':(LOC[c]?c:'en')}
 const LANGS={ru:'Русский',uk:'Українська',en:'English',zh:'中文',de:'Deutsch',fr:'Français'};
@@ -715,10 +774,36 @@ function renderLang(){$('lmenu').innerHTML=Object.keys(LANGS).map(k=>'<button da
 $('lang').addEventListener('click',e=>{e.stopPropagation();renderLang();$('lmenu').hidden=!$('lmenu').hidden});
 $('lmenu').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b)setLang(b.dataset.l)});
 document.addEventListener('click',()=>{$('lmenu').hidden=true});
+// Адрес сервера турниров. Пусто = играем с ботами без сервера.
+// Пример: const DEFAULT_SERVER='wss://my-app.onrender.com/ws';
+const DEFAULT_SERVER='';
+const SERVER_URL=(function(){try{const q=new URLSearchParams(location.search).get('server');if(q)return q}catch(_){}return DEFAULT_SERVER})();
+let net=null,netStart=0,netT=0;
 let TG=null,TU=null;
-let stats={veh:'classic',races:0,wins:0,coins:0,flips:0,games:0,bestScore:0,bestTrack:0,claimed:[],bonus:0};
+let stats={veh:'classic',spent:0,up:{},races:0,wins:0,coins:0,flips:0,games:0,bestScore:0,bestTrack:0,claimed:[],bonus:0};
 try{Object.assign(stats,JSON.parse(localStorage.getItem('cb_stats')||'{}'))}catch(_){}
 stats.bestScore=Math.max(stats.bestScore,best);
+stats.spent=+stats.spent||0;if(!stats.up||typeof stats.up!=='object')stats.up={};
+if((stats.ver||0)<2){stats.up={};stats.spent=0;stats.ver=2;save()}
+function bal(){return stats.coins+stats.bonus-stats.spent}
+let gid='classic',lastTab='';
+const UPC=[100,200,350,550,800],UPMAX=5,UPF={classic:1,bike:.6,moped:.8,harley:1.2,sport:1.3,quad:1.1},UPRATE=[6,6,7,4];
+function upCost(id,l){return Math.round(UPC[l]*(UPF[id]||1)/10)*10}
+function upRefund(id,l){return Math.round(upCost(id,l-1)*.5/10)*10}
+function downgrade(i){
+  const id=gid,lv=stats.up[id]||(stats.up[id]=[0,0,0,0]);
+  if(lv[i]<=0)return;
+  const back=Math.min(stats.spent,upRefund(id,lv[i]));
+  stats.spent-=back;lv[i]--;save();hap();
+  toast(tr('toast.downgraded',{s:tr('sl.'+i),n:lv[i],c:back}));renderMenu();
+}
+function upgrade(i){
+  const id=gid,lv=stats.up[id]||(stats.up[id]=[0,0,0,0]);
+  if(lv[i]>=UPMAX)return;
+  const c=upCost(id,lv[i]);
+  if(bal()<c){toast(tr('toast.noCoins'));return}
+  stats.spent+=c;lv[i]++;save();hap();toast(tr('toast.upgraded',{s:tr('sl.'+i),n:lv[i]}));renderMenu();
+}
 function save(){try{localStorage.setItem('cb_stats',JSON.stringify(stats))}catch(_){}}
 addEventListener('pagehide',save);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
@@ -743,19 +828,38 @@ let tab='home';
 function inviteLink(){return 'https://t.me/CryptoBiker_bot?start=ref'+(TU?TU.id:'')}
 function renderMenu(){
   $('menu').className=tab==='home'?'home':'sub';
-  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('act',b.dataset.t===(tab==='garage'||tab==='tourney'?'home':tab)));
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('act',b.dataset.t===(tab==='garage'||tab==='tourney'||tab==='bike'?'home':tab)));
   const rec=Math.max(best,stats.bestScore);let h='';
   if(tab==='home'){
     h='<div class="hero"><div class="ttl">CRYPTO<br>BIKER</div><div class="sub">'+tr('home.sub')+'</div><button class="gb" data-a="play">'+tr('home.play')+'</button><button class="gb" data-a="garage">'+tr('home.garage')+'</button><button class="gb" data-a="tourney">'+tr('home.tour')+'</button><div class="rec">'+tr('home.rec',{v:tr('v.'+stats.veh),r:fmt(rec)})+'</div></div>';
   }else{
-    h='<div class="hd"><button data-a="back">‹</button><h2>'+tr('t.'+tab)+'</h2></div>';
+    h='<div class="hd"><button data-a="'+(tab==='bike'?'backg':'back')+'">‹</button><h2>'+tr(tab==='bike'?'v.'+gid:'t.'+tab)+'</h2></div>';
     if(tab==='tourney'){
       h+='<div class="pn"><button class="big'+(tmode===2?'':' off')+'" data-a="mode" data-m="2">'+tr('tour.two')+'</button><button class="btn2 hot" style="width:100%;margin-top:10px" data-a="search" data-m="2">'+tr('tour.find1')+'</button></div>'
         +'<div class="pn"><button class="big'+(tmode===5?'':' off')+'" data-a="mode" data-m="5">'+tr('tour.five')+'</button><button class="btn2 hot" style="width:100%;margin-top:10px" data-a="search" data-m="5">'+tr('tour.find5')+'</button></div>'
-        +'<div class="pn"><p class="note" style="margin:0">'+tr('tour.note')+'</p></div>';
+        +'<div class="pn"><p class="note" style="margin:0">'+tr(SERVER_URL?'tour.noteOn':'tour.note')+'</p></div>';
     }else if(tab==='garage'){
-      for(const id in VEH){const v=VEH[id],sel=stats.veh===id;
-        h+='<div class="pn vc'+(sel?' sel':'')+'"><canvas data-v="'+id+'" width="480" height="260"></canvas><div class="vn">'+tr('v.'+id)+'</div><div class="vg">'+v.s.map((x,i)=>'<div class="sr"><span>'+tr('sl.'+i)+'</span><i><u style="width:'+x*20+'%"></u></i></div>').join('')+'</div><button class="btn2'+(sel?'':' hot')+'" data-a="pick" data-v="'+id+'"'+(sel?' disabled':'')+'>'+(sel?tr('sel.on'):tr('sel.pick'))+'</button></div>';}
+      const EM=['⚡','🔥','🎯','🦘'];
+      h+='<div class="pn bal"><span>'+tr('up.bal')+'</span><b><span class="coin"></span>'+fmt(bal())+'</b></div>'
+        +'<p class="note" style="margin:0 0 6px">'+tr('gar.hint')+'</p><div class="leg">'+[0,1,2,3].map(i=>EM[i]+' '+tr('sl.'+i)).join(' · ')+'</div><div class="gt">';
+      for(const id in VEH){
+        const v=VEH[id],sel=stats.veh===id,lv=stats.up[id]||[0,0,0,0];
+        h+='<button class="gc'+(sel?' sel':'')+'" data-a="bike" data-v="'+id+'"><canvas data-v="'+id+'" width="480" height="260"></canvas><div class="gn">'+tr('v.'+id)+(sel?' ✓':'')+'</div><div class="gm">'
+          +v.s.map((x,i)=>'<div class="mb"><em>'+EM[i]+'</em><i><u style="width:'+Math.min(100,x*20+lv[i]*4)+'%"></u></i></div>').join('')+'</div></button>';
+      }
+      h+='</div>';
+    }else if(tab==='bike'){
+      const id=gid,lv=stats.up[id]||[0,0,0,0];
+      h+='<div class="pn bal"><span>'+tr('up.bal')+'</span><b><span class="coin"></span>'+fmt(bal())+'</b></div>'
+        +'<div class="pn vc sel"><canvas data-v="'+id+'" width="480" height="260"></canvas><div class="vn">'+tr('v.'+id)+'</div><div class="upsel">'+tr('up.sel')+'</div></div>'
+        +'<h3 class="uph">'+tr('up.title')+'</h3>';
+      for(let i=0;i<4;i++){
+        const l=lv[i],max=l>=UPMAX,c=max?0:upCost(id,l);
+        h+='<div class="pn up"><div class="uh"><b>'+tr('sl.'+i)+'</b><span>'+tr('up.level',{n:l,m:UPMAX})+' · +'+l*UPRATE[i]+'%</span></div><div class="pips">'
+          +[0,1,2,3,4].map(k=>'<s'+(k<l?' class="on"':'')+'></s>').join('')+'</div>'
+          +'<div class="row"><button class="btn2 dn" data-a="dng" data-i="'+i+'"'+(l<=0?' disabled':'')+'>−'+(l>0?' <span class="coin"></span>+'+fmt(upRefund(id,l)):'')+'</button><button class="btn2'+(max||bal()<c?'':' hot')+'" data-a="upg" data-i="'+i+'"'+(max?' disabled':'')+'>'+(max?tr('up.max'):tr('up.buy')+' <span class="coin"></span> '+fmt(c))+'</button></div></div>';
+      }
+      h+='<p class="note">'+tr('up.hint')+'</p>';
     }else if(tab==='friends'){
       h+='<div class="pn"><h3>'+tr('fr.title')+'</h3><p>'+tr('fr.text')+'</p><div class="row"><button class="btn2 hot" data-a="share">'+tr('fr.invite')+'</button><button class="btn2" data-a="copy">'+tr('fr.copy')+'</button></div></div>'
         +'<div class="pn"><h3>'+tr('fr.list')+'</h3><div class="empty">'+tr('fr.empty')+'</div></div>';
@@ -769,11 +873,12 @@ function renderMenu(){
       const name=TU?esc([TU.first_name,TU.last_name].filter(Boolean).join(' ')||tr('p.racer')):tr('p.racer');
       const ini=name.trim().charAt(0).toUpperCase()||'R';
       h+='<div class="av">'+(TU&&TU.photo_url?'<img src="'+esc(TU.photo_url)+'" alt="" onerror="this.remove()">':ini)+'</div><div class="nm">'+name+'</div><div class="un">'+(TU&&TU.username?'@'+esc(TU.username):'Crypto Biker')+'</div>'
-        +'<div class="grid">'+[[tr('p.rec'),fmt(rec)],[tr('p.track'),Math.floor(stats.bestTrack)+'%'],[tr('p.runs'),fmt(stats.games)],[tr('p.coins'),fmt(stats.coins)],[tr('p.flips'),fmt(stats.flips)],[tr('p.races'),fmt(stats.races)],[tr('p.wins'),fmt(stats.wins)],[tr('p.bal'),fmt(stats.coins+stats.bonus)]].map(a=>'<div class="st"><b>'+a[1]+'</b><span>'+a[0]+'</span></div>').join('')+'</div>';
+        +'<div class="grid">'+[[tr('p.rec'),fmt(rec)],[tr('p.track'),Math.floor(stats.bestTrack)+'%'],[tr('p.runs'),fmt(stats.games)],[tr('p.coins'),fmt(stats.coins)],[tr('p.flips'),fmt(stats.flips)],[tr('p.races'),fmt(stats.races)],[tr('p.wins'),fmt(stats.wins)],[tr('p.bal'),fmt(bal())]].map(a=>'<div class="st"><b>'+a[1]+'</b><span>'+a[0]+'</span></div>').join('')+'</div>';
     }
   }
-  $('view').innerHTML=h;$('view').scrollTop=0;
-  if(tab==='garage')document.querySelectorAll('#view canvas[data-v]').forEach(cv=>{
+  const keepTop=lastTab===tab?$('view').scrollTop:0;lastTab=tab;
+  $('view').innerHTML=h;$('view').scrollTop=keepTop;
+  if(tab==='garage'||tab==='bike')document.querySelectorAll('#view canvas[data-v]').forEach(cv=>{
     const c=cv.getContext('2d'),id=cv.dataset.v;
     const g=c.createRadialGradient(240,150,10,240,150,200);g.addColorStop(0,'rgba(255,45,74,.28)');g.addColorStop(1,'rgba(255,45,74,0)');
     c.fillStyle=g;c.fillRect(0,0,480,260);
@@ -790,6 +895,7 @@ function openGame(){
 function backToMenu(){
   if(!gameOn)return;
   if(state==='run'&&mode==='solo')endRun();
+  if(net){try{net.ws.send(JSON.stringify({t:'leave'}))}catch(_){}netClose()}
   if(srch)closeSearch();$('res').className='';$('cd').className='';$('rbar').hidden=true;mode='solo';
   gameOn=false;inp.go=inp.rev=inp.l=inp.r=inp.goEdge=false;
   document.querySelectorAll('.btn.on').forEach(b=>b.classList.remove('on'));
@@ -812,7 +918,7 @@ function renderSearch(){
   $('sSlots').innerHTML=h;
 }
 function closeSearch(){if(srch){clearTimeout(srch.timer);srch=null}$('srch').className=''}
-function startSearch(n){
+function startSearchOffline(n){
   hap();closeSearch();tmode=n;
   const names=[],used=new Set();
   while(names.length<n-1){const nm=(BNL[lang]||BNL.en)[(Math.random()*BNL.en.length)|0]+'_'+(10+((Math.random()*89)|0));if(!used.has(nm)){used.add(nm);names.push(nm)}}
@@ -825,7 +931,90 @@ function startSearch(n){
   };
   next();
 }
-$('sCancel').addEventListener('click',closeSearch);
+function online(){return !!(net&&net.on)}
+function startSearch(n){if(SERVER_URL)startSearchOnline(n);else startSearchOffline(n)}
+function netClose(){if(net){try{net.ws.onclose=null;net.ws.onerror=null;net.ws.close()}catch(_){}net=null}}
+function rawName(){return TU&&TU.first_name?String(TU.first_name):(lang==='ru'?'Гонщик':'Racer')}
+function startSearchOnline(n){
+  hap();closeSearch();netClose();tmode=n;
+  const s=srch={m:n,names:[],found:0,timer:0,online:true};
+  $('srch').className='show';renderSearch();
+  const fallback=()=>{if(srch!==s)return;netClose();closeSearch();toast(tr('toast.offline'));startSearchOffline(n)};
+  let ws;
+  try{ws=new WebSocket(SERVER_URL)}catch(_){fallback();return}
+  const nt=net={ws,on:false,players:[],rows:{},names:{},you:null,sent:false,rewarded:false,finalRows:null};
+  s.timer=setTimeout(fallback,7000);
+  ws.onopen=()=>{try{ws.send(JSON.stringify({t:'find',mode:n,name:rawName(),veh:stats.veh,init:(TG&&TG.initData)||''}))}catch(_){}};
+  ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(_){return}onNet(m,s,nt)};
+  ws.onerror=()=>{if(srch===s&&!nt.on)fallback()};
+  ws.onclose=()=>{if(srch===s&&!nt.on)fallback();else if(net===nt&&gameOn&&mode==='race'&&!nt.finalRows)toast(tr('toast.lost'))};
+}
+function onNet(m,s,nt){
+  switch(m.t){
+    case 'hello':nt.you=m.id;clearTimeout(s.timer);break;
+    case 'q':if(srch===s){clearTimeout(s.timer);s.names=(m.others||[]).map(x=>esc(x));s.found=s.names.length;renderSearch()}break;
+    case 'err':if(srch===s){netClose();closeSearch();toast(tr('toast.offline'));startSearchOffline(s.m)}break;
+    case 'match':if(srch===s){nt.on=true;closeSearch();openRaceOnline(m,nt)}break;
+    case 'st':for(const row of m.p){const b=bots.find(x=>x.id===row[0]);if(!b)continue;b.tx=row[1];if(row.length>2){b.ty=row[2];b.ta=row[3];if(b.y==null){b.y=b.ty;b.a=b.ta}}else b.ty=null}break;
+    case 'fin':nt.rows[m.id]={time:m.time};if(m.id===nt.you)nt.myTime=m.time;if(state==='done')renderResOnline();break;
+    case 'res':onResultOnline(m,nt);break;
+  }
+}
+function openRaceOnline(m,nt){
+  hap();applyVehicle(stats.veh);mode='race';N=RACE_N;
+  $('menu').hidden=true;$('game').hidden=false;gameOn=true;resize();
+  trackSeed=m.seed;reset();coins=[];
+  nt.players=m.players;nt.you=m.you;
+  m.players.forEach(p=>{nt.names[p.id]=(p.bot?'🤖 ':'')+esc(p.name)});
+  bots=m.players.filter(p=>p.id!==m.you).map((p,i)=>({id:p.id,name:nt.names[p.id],veh:VEH[p.veh]?p.veh:'classic',x:startX,y:null,a:0,tx:startX,ty:null,ta:0,v:0,fin:null,wr:0,col:BC[i%BC.length]}));
+  netStart=Date.now()+(m.startAt-m.now);netT=0;
+  raceT=0;state='countdown';cd=Math.max(0,(netStart-Date.now())/1000);
+  $('lP').textContent=tr('hud.place');$('lF').textContent=tr('hud.time');
+  $('rbar').innerHTML=bots.map(b=>'<i style="background:'+b.col+'"></i>').join('')+'<i class="me"></i>';$('rbar').hidden=false;
+  $('msg').className='';$('res').className='';
+  setHint(tr('hint.race'));
+  try{TG.BackButton.show()}catch(_){}
+}
+const fmtMs=ms=>ms==null?'—':(ms/1000).toFixed(2)+' '+tr('r.sec');
+function renderResOnline(){
+  const nt=net;if(!nt)return;
+  let rows;
+  if(nt.finalRows)rows=nt.finalRows;
+  else{
+    const done=[],wait=[];
+    for(const p of nt.players){
+      const you=p.id===nt.you,t=you?(nt.myTime!=null?nt.myTime:(nt.myLocal!=null?Math.round(nt.myLocal*1000):null)):(nt.rows[p.id]?nt.rows[p.id].time:undefined);
+      const row={id:p.id,name:you?myName():nt.names[p.id],time:t,you};
+      (t===undefined||(you&&t==null)?wait:done).push(row);
+    }
+    done.sort((a,b)=>(a.time==null)-(b.time==null)||a.time-b.time);
+    rows=done.concat(wait.map(w=>Object.assign(w,{time:'…'})));
+  }
+  $('rList').innerHTML=rows.map((x,i)=>'<div class="rr'+(x.you?' me':'')+'"><b>'+(i+1)+'</b><span>'+x.name+'</span><em>'+(x.time==='…'?'…':fmtMs(x.time))+'</em></div>').join('');
+}
+function onResultOnline(m,nt){
+  nt.finalRows=m.rows.map(r=>({id:r.id,name:r.id===nt.you?myName():((r.bot?'🤖 ':'')+esc(r.name)),time:r.time,you:r.id===nt.you,place:r.place}));
+  if(state!=='done'){state='done';$('msg').className='';$('cd').className=''}
+  const me=nt.finalRows.find(x=>x.you),n=nt.finalRows.length,place=me?me.place:n;
+  let rew=0;
+  if(!nt.rewarded){
+    nt.rewarded=true;
+    if(me&&me.time!=null)rew=n===2?(place===1?50:0):([150,80,40,0,0][place-1]||0);
+    stats.races++;if(place===1&&me&&me.time!=null)stats.wins++;stats.bonus+=rew;save();nt.rew=rew;
+  }else rew=nt.rew||0;
+  const valid=me&&me.time!=null;
+  $('rTitle').textContent=valid?tr('r.p'+place):tr('r.dnf');$('rTitle').className=valid&&place===1?'w':'';
+  $('rRew').textContent=rew?tr('r.reward',{n:rew}):tr('r.none');
+  renderResOnline();$('res').className='show';
+  try{TG.HapticFeedback.notificationOccurred(place===1?'success':'warning')}catch(_){}
+}
+function raceFinishOnline(){
+  state='done';const nt=net;nt.myLocal=raceT;
+  if(!nt.sent){nt.sent=true;try{nt.ws.send(JSON.stringify({t:'fin'}))}catch(_){}}
+  $('msg').className='';
+  if(!nt.finalRows){$('rTitle').textContent=tr('r.wait');$('rTitle').className='';$('rRew').textContent='';renderResOnline();$('res').className='show'}
+}
+$('sCancel').addEventListener('click',()=>{if(net&&!net.on){try{net.ws.send(JSON.stringify({t:'cancel'}))}catch(_){}netClose()}closeSearch()});
 function openRace(names){
   hap();applyVehicle(stats.veh);mode='race';N=RACE_N;
   $('menu').hidden=true;$('game').hidden=false;gameOn=true;resize();
@@ -841,6 +1030,11 @@ function openRace(names){
 }
 function raceTick(dt){
   raceT+=dt;
+  if(online()){
+    netT+=dt;
+    if(netT>=.1){netT=0;if(net.ws.readyState===1)try{net.ws.send(JSON.stringify({t:'p',x:Math.round(B.x),y:Math.round(B.y),a:+B.a.toFixed(2)}))}catch(_){}}
+    return;
+  }
   for(const b of bots){
     if(b.fin!=null)continue;
     if(b.stall>0)b.stall-=dt;else if(Math.random()<dt*.045)b.stall=1+Math.random()*1.2;
@@ -858,6 +1052,7 @@ function respawn(){
   air=0;rot=0;wasAir=false;styleLive=0;state='run';$('msg').className='';
 }
 function raceFinish(){
+  if(online()){raceFinishOnline();return}
   state='done';const my=raceT;
   const rows=[{name:myName(),t:my,you:true}].concat(bots.map(b=>({name:b.name,t:b.fin!=null?b.fin:my+(finishX-b.x)/Math.max(150,b.v)})));
   rows.sort((a,b)=>a.t-b.t);
@@ -882,7 +1077,10 @@ $('view').addEventListener('click',e=>{
   else if(a==='tourney')go('tourney');
   else if(a==='mode'){tmode=+el.dataset.m;hap();renderMenu()}
   else if(a==='search')startSearch(+el.dataset.m);
-  else if(a==='pick'){const id=el.dataset.v;if(VEH[id]){stats.veh=id;save();hap();toast(tr('toast.picked',{v:tr('v.'+id)}));renderMenu()}}
+  else if(a==='bike'){const id=el.dataset.v;if(VEH[id]){gid=id;if(stats.veh!==id){stats.veh=id;save();toast(tr('toast.picked',{v:tr('v.'+id)}))}go('bike')}}
+  else if(a==='backg')go('garage');
+  else if(a==='upg')upgrade(+el.dataset.i);
+  else if(a==='dng')downgrade(+el.dataset.i);
   else if(a==='back')go('home');
   else if(a==='share'){
     const url='https://t.me/share/url?url='+encodeURIComponent(inviteLink())+'&text='+encodeURIComponent(tr('fr.share',{r:fmt(Math.max(best,stats.bestScore))}));
